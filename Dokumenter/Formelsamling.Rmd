@@ -1,0 +1,240 @@
+---
+title: "Formelsamling"
+author: "Ove Haugland Jakobsen/Lars Skaage Engebretsen"
+date: "8 mars 2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+## Sannsynlighetsteori
+
+### Regnerregler for sannsynligheter
+
+Unionen til to vilkårlige begivenheter:
+
+$$P(A \cup B)=P(A)+P(B)-P(A \cap B)$$
+
+Betinget sannsynlighet:
+
+$$P(A \vert B)=\frac{P(A \cap B)}{P(B)}$$
+
+Regel for *total sannsynlighet*:
+
+$$P(A)=P(A \vert B) \cdot P(B)+P(A \vert \bar{B}) \cdot P(\bar{B})$$
+
+Bayes' teorem:
+
+$$P(A \vert B)=\frac{P(B\vert A)P(A)}{P(B \vert A)P(A)+P(B\vert\bar{A})P(\bar{A})}\Rightarrow\frac{P(B\vert A)P(A)}{P(B)}$$
+
+## Forventning og varians
+
+### Forventing
+
+$$E(X)=\sum x_i p_i$$
+
+### Varians
+
+$$\sigma^2_X=\sum_{Alle x_i}(x_i-\mu_i)^2p_i$$
+
+## Binomisk fordeling
+
+### Sannsynlighetsberegninger
+
+Sannsynlighet for en gitt verdi av $X$.
+
+$$P(X=x)=\left( \begin{array}{c} n \\ x \end{array} \right)p^xq^{n-x}$$
+
+Utregning av kombinasjoner ($n$ over $x$):
+
+$$\left( \begin{array}{c} n \\ x \end{array} \right)=\frac{n!}{x!(n-x)!}$$
+
+### Egenskaper ved den binomiske fordelingen
+
+Forventing  til den binomiske fordelingen:
+
+$$E(X)=np$$
+
+Variansen til den binomiske fordelingen:
+
+$$Var(X)=np(1-p)$$
+
+Standardavvik til den binomiske fordelingen:
+
+$$SD(X)=\sigma(X)=\sqrt{np(1-p)}$$
+
+### Estimering av populasjonsparametre
+
+$$\hat{p}=\frac{X}{n}$$
+
+Estimering av varians:
+
+$$\hat{\sigma}^2=\frac{\hat{p}(1-\hat{p})}{n}$$
+
+## Normalfordeling
+
+```{r, echo=FALSE, fig.height=1.5, fig.width=3, fig.align='center'}
+par(mar = c(2,2,1,1), cex=.6)
+coord.x <- c(1,seq(1,4,0.001),4)
+coord.y <- c(0,dnorm(seq(1,4,0.001)),0)
+curve(dnorm(x),xlim=c(-4,4), ylab = '', xlab = '', bty = 'n', yaxt = 'n')
+polygon(coord.x, coord.y, col = 'darkgrey', border = NA)
+```
+
+### Standardisering
+
+$$Z=\frac{X-\mu}{\sigma}$$
+
+Vanlige verdier av $2\alpha$ (tosidig test) $\alpha$ (ensidig test) og tilhørende $Z_\alpha$:
+
+$\alpha$ | $\alpha/2$ | $Z_\alpha$
+------|-------|------
+0.200 | 0.100 | 1.280
+0.100 | 0.050 | 1.645
+0.050 | 0.025 | 1.960
+0.020 | 0.010 | 2.330
+0.010 | 0.005 | 2.576
+0.002 | 0.001 | 3.090
+
+For å finne kritisk verdi for $Z$ for en tosidig test, bruker vi kolonnen for $\alpha$. For 5 prosentsnivået er $Z_\alpha=Z_{0.05}=1.96$. For en ensidig test på 5 prosentnivået er $Z_{\alpha/2}=Z_{0.05}=1.645$.
+
+### Estimering av populasjonsparametre
+
+Estimering av forventing:
+
+$$\hat{\mu}=\bar{X}$$
+
+Estimering av varians:
+
+$$\hat{\sigma}^2=s^2=\frac{1}{n-1}\sum\limits_{i=1}^{n}{(X_i-\bar{X})^2}$$
+
+Estimering av standardavvik:
+
+$$\hat{\sigma}=s=\sqrt{\hat{\sigma}^2}$$
+
+## Lineære kombinasjoner av normalfordelte variabler
+
+Forvetning (gjennomsnitt) for lineære kombinasjoner av normalfordelte variabler får vi ved å addere forventningen til hver variabel:
+
+$$E(Z)=\sum^n_{i=1}E(x_i)$$
+
+Varians for lineære kombinasjoner av normalfordelte variabler får vi ved å addere variansen til hver variabel:
+
+$$Var(Z)=\sum^n_{i=1}1^2var(x_i)$$
+
+## Krysstabeller
+
+Testobservatoren $\chi^2$ regnes ut ved følgende formel, hvor $O$ står for observerte verdier og $E$ står for forventede verdier. $i$ og $j$ står for henholdsvis kolonner og rader.
+
+$$\chi^2=\sum\limits_{i=1}^{r}{\sum\limits_{j=1}^{k}{\frac{(O_{ij}-E_{ij})^2}{E_{ij}}}}$$
+
+Vi beregner antallet frihetsgrader gjennom formelen $(r-1)\cdot(k-1)$. For en 2 x 2-tabell får vi dermed $(2-1)\cdot(2-1)=1$ frihetsgrad. For en 3 x 4-tabell får vi $(3-1)\cdot(4-1)=6$ frihetsgrader.
+
+## Hypotesetesting
+
+### Feilmargin
+
+Konfidensintervall for populasjonsgjennomsnittet:
+
+$$t(\mu)=\frac{\bar{Y}-\mu}{\widehat{SE}(\bar{Y})}$$
+
+Beregne størrelsen på konfidensintervall (kjent varians):
+
+$$\hat y\pm t_{\alpha/2}\cdot SE(\bar y)$$
+
+Beregne størrelsen på konfidensintervall (ukjent varians):
+
+$$\hat y\pm t_{\alpha/2}\cdot\frac{s}{\sqrt{n}}$$
+
+Beregne maksimal feil:
+
+$$E=t_{\alpha/2}\cdot\frac{\sigma}{\sqrt{n}}\rightarrow n=\left(\frac{t_{\alpha/2}\cdot\sigma}{E}\right)^2$$
+
+## Sammenligning av gjennomsnitt
+
+Forventet verdi til estimatet $\hat y_1-\hat y_2$:
+
+$$E(y_1-y_2)=(\mu_1-\mu_2)$$
+
+Varians:
+
+$$Var(y_1-y_2)=\frac{\sigma^2_1}{n_1}+\frac{\sigma^2_2}{n_2}$$
+
+Standardavvik:
+
+$$SD(y_1-y_2)=\sqrt{\frac{\sigma^2_1}{n_1}+\frac{\sigma^2_2}{n_2}}$$
+
+Testobservator for sammenligning av to gjennomsnitt for $H_0$ om like gjennomsnitt:
+
+$$Z=\frac{\bar x_1-\bar x_2}{\sqrt{\frac{\sigma^2_1}{n_1}+\frac{\sigma^2_2}{n_2}}}$$
+
+## Variansanalyse
+
+Utregning av $SST$, $SSG$ og $SSE$:
+
+$$SST=\sum\limits_{i=1}^{k}{\sum\limits_{j=1}^{n_i}{(Y_{ij}-\bar{Y})^2}}$$
+
+$$SSG=\sum\limits_{i=1}^{k}{\sum\limits_{j=1}^{n_i}{(\bar{Y}_i-\bar{Y})^2}}$$
+
+$$SSE=\sum\limits_{i=1}^{k}{\sum\limits_{j=1}^{n_i}{(Y_{ij}-\bar{Y}_i)^2}}$$
+
+Husk også at $SST=SSG+SSE$.
+
+Testobservatoren $F$ i ANOVA for grupper, regner vi ut med følgende formel:
+
+$$F=\frac{SSG/(k-1)}{SSE/(n-1)}$$
+
+Forklart varians ($R^2$):
+
+$$R^2=\frac{SSG}{SST}$$
+
+## Utvalgsstørrelse
+
+### Trekksannsynlighet ved enkelt tilfeldig utvalg
+
+$$\frac{antall\ gunstige}{antall\ mulige}=\frac{N-1/n-1}{N!/n!(N-n)!}$$
+
+### Beregning av $n$ gitt maksimal feil
+
+$$n=\left(\frac{z_{\alpha/2}\cdot\sigma}{E}\right)^2$$
+
+Hvor $z_{\alpha/2}$ er kritisk verdi for $Z$ gitt valgt siginifikansnivå, $\sigma$ er standardavvik og $E$ er maksimal feil.
+
+$$n=\left(\frac{z_{\alpha/2}\cdot\sqrt{\hat{p}(1-\hat{p})}}{E}\right)^2$$
+
+Når vi har en endelig stor populasjon:
+
+$$n=\frac{n \cdot N}{n+(N-1)}$$
+
+## Korrelasjon
+
+Korrelasjonskoeffisienten (Pearsons R):
+
+$$r=\frac{s_{xy}}{s_x\cdot s_y}=\frac{\frac{1}{n-1}\sum^n_{i=1}(x_i-\bar x)(y_i-\bar y)}{\sqrt{\frac{1}{n-1}\sum^n_{i=1}(x_i-\bar x)^2}\cdot\sqrt{\frac{1}{n-1}\sum^n_{i=1}(y_i-\bar y)^2}}$$
+
+## Regresjonsanalyse
+
+### Bivariat regresjon
+
+Den ordinære lineære regresjonen kan skrives om følgende ligning:
+
+$$Y=\alpha+\beta x+\epsilon$$
+
+Modellen gir oss følgende forventing og varians:
+
+$$E(y_i\vert x_i)=E(\alpha+\beta x_i+\epsilon_i)=\alpha+\beta x_i$$
+$$Var(y_i\vert x_i)=Var(\alpha+\beta x_i+\epsilon_i)=Var(\epsilon_i)=\sigma^2$$
+
+Fordelingen til $y$ er dermed:
+
+$$y_i \sim N(\alpha +\beta x_i, \sigma)$$
+
+### Multivariat regresjon
+
+$$Y=\alpha+\beta_1x_1+\beta_2x_2+\epsilon$$
+
+### Beregning av $\beta$ og $\alpha$
+
+$$\hat\beta=\frac{\sum^n_{i=1}(y_i-\bar y)(x_i-\bar x)}{\sum^n_{i=1}(x_i-\bar x)^2}$$
+
+$$\hat\alpha=\bar y-\hat\beta\bar x$$
