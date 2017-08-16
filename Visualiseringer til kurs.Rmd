@@ -1,0 +1,306 @@
+---
+title: "Visualiseringer til STAT101"
+author: "Ove Haugland Jakobsen"
+date: "August 21, 2016"
+output: pdf_document
+---
+
+I dette dokumentet produserer vi visualiseringer i R til bruk i kurs i grunnleggende statistikk. Siden dette dokumentet er skrevet i R Markdown, vil all kode for å produsere visualiseringene være inkludert.
+
+## Diskrete og kontinuerlige variabler
+
+```{r}
+x_diskret <- sort(as.integer(runif(100,1,11)))
+x_kontinu <- sort(runif(100,1,11))
+par(mfrow = c(1,2))
+plot(x_diskret, col = "skyblue3", bg = "skyblue", pch = 21, ylab = "Verdi")
+plot(x_kontinu, col = "skyblue3", bg = "skyblue", pch = 21, ylab = "Verdi")
+par(mfrow = c(1,1)) # reset
+```
+
+
+## Uniform sannsynlighet
+
+Dersom alle utfallene i utfallsrommet har lik sannsynlighet for å inntreffe, har vi en uniform sannsynlighetsmodell. Vi skal illustrere uniform sannsynlighet med genererte data. Vi oppretter en vekktor med ti millioner observasjoner trukket fra en uniform sannsynlighetsfunksjon med verdier mellom 1 og 10.
+
+```{r}
+unif <- as.integer(runif(10000000, 1, 11))
+op <- c()
+op$mar <- c(par()$mar)
+op$mgp <- c(par()$mgp)
+par(mar = c(3,3,2,2), mgp = c(0, 0, 0))
+barplot(table(unif), col = "red", yaxt = "n", ylab = "Frekvens \n n = 10,000,000")
+par(op)
+```
+
+
+## Binomisk sannsynlighetsfordeling
+
+Plot av den binomiske sannsynlighetsfordelingen.
+
+```{r}
+b <- c()
+for (i in 1:500) {
+  b <- c(b, dbinom(i, 500, 0.2))
+}
+plot(b, type="l", col ="red", ylab = "Sannsynlighet", xlab = "")
+```
+
+Vi regner ut forventingen i den binomiske fordelingen med formelen $E(X)=np$.
+
+Vi regner ut variansen i den binomiske fordelingen med formelen $E(X)=np(1-p)$.
+
+Vi regner ut standardfeilen til den binomiske fordelingen med formelen $SD(\hat{X})=\sqrt{\frac{p(1-p)}{n}}$.
+
+Vi finner at for en binomisk fordelt variabel med $n=500$ og $p=0.2$, har vi en forventning lik $E(\hat{X})=500*0.2=`r 500*0.2`$ og et standardavvik lik $SD(\hat{X})=\sqrt{\frac{0.2(1-0.2)}{500}}=`sqrt((0.2*0.8)/500)`$. Dette gir oss følgende:
+
+$$X \sim (X, X)$$
+
+## Normalfordelingen
+
+Vi lager først en vektor som inkluderer et stort antall observasjoner som er normalfordelt med $\mu = 0$ og $\sigma = 1$:
+
+```{r}
+set.seed(1)
+v <- rnorm(10000000, 0, 1)
+```
+
+Merk at vi i koden over brukte `set.seed()`. Vi har et stort antall observasjoner, så vi skal få en ganske jevn kurve uansett, og den bør bli nær identisk for hver gang vi lager en ny vektor `v`. Men ved å sette `set.seed(1)` sørger vi for at resultatet blir likt hver eneste gang denne koden kjøres.
+
+Vi kan nå visualisere vår vektor med et `density plot`:
+
+```{r}
+plot(density(v), col="blue", frame=F, ylab="", yaxt="n", xaxt="n", xlab=expression(X), main="Normalfordelingen")
+polygon(density(v), col = "skyblue2")
+axis(1, at = seq(-4,4, by=1))
+```
+
+Vi bruker her `polygon` til å fargelegge arealet under kurven i normalfordelingskurven vår. Vi bruker `axis` til å lage punktene til vår X-akse.
+
+Legg også merke til at vi i `plot` har spesifisert parameteren `xaxt="n"`. Dette gjør at vi i utgangspunktet ikke har punkter på x-aksen. I `xlab` har vi brukt `expression(X)` for å tegne $X$ som et matematisk symbol.
+
+## Bursdagsproblemet
+
+```{r}
+vec <- c()
+for (i in 1:100) {
+  n <- 366-i
+  vec <- c(vec, prod(n:365)/365^i)
+}
+plot(vec, type = "l", ylab = "Sannsynlighet", xlab = "Antall personer",
+     col = "red", frame = F)
+abline(0.5, 0, col = "grey")
+```
+
+## Illustrasjon av uforklart varians
+
+Med konstruerte data, viser vi her hvordan størrelsen på feilleddet i en regresjonsmodell med form $Y = \alpha + \beta$$X + \epsilon$ påvirker variansen og forklaringskraften til modellen.
+
+```{r}
+set.seed(1)
+x <- rnorm(100,0,1)       # dette blir vår x-variabel
+eps <- rnorm(100,0,0.25)  # dette blir feilleddet
+y <- -1 + (0.5 * x) + eps # vi konstruerer y ut fra modellen y = alpha + 0.5beta + espsilon
+```
+
+Vi lager et scatterplot som viser sammenhengen mellom $X$ og $Y$ i vår konstruerte modell.
+
+```{r}
+op$mar <- c(par()$mar)
+par(mfrow = c(1,1), mar = c(5.1, 4.1, 2.1, 2.1)) 
+plot(x, y, col="blue", bg="skyblue", pch=21, ylim = range(-3,1), cex.axis = 0.8)
+abline(lm(y~x))
+```
+
+Vi lager en OLS modell for å beskrive sammenhengen mellom $X$ og $Y$
+
+```{r}
+ols.1 <- lm(y~x)
+summary(ols.1)
+```
+
+Hva skjer så hvis vi *reduserer* feilleddet?
+
+```{r}
+set.seed(1)
+x <- rnorm(100,0,1)
+eps <- rnorm(100,0,0.05)
+y <- -1 + (0.5 * x) + eps
+plot(x, y, col="blue", bg="skyblue", pch=21, ylim = range(-3,1), cex.axis = 0.8)
+abline(lm(y~x))
+ols.2 <- lm(y~x)
+summary(ols.2)
+```
+
+Og hva skjer når vi *øker* feilleddet?
+
+```{r}
+set.seed(1)
+x <- rnorm(100,0,1)
+eps <- rnorm(100,0,0.5)
+y <- -1 + (0.5 * x) + eps
+plot(x, y, col="blue", bg="skyblue", pch=21, ylim = range(-3,1), cex.axis = 0.8)
+abline(lm(y~x))
+ols.3 <- lm(y~x)
+summary(ols.3)
+```
+
+## Størrelse på utvalg
+
+```{r}
+ps <- c()
+for (i in 1:100) {
+  ps[i] <- 1 - pbinom(0, i, 0.0001)
+}
+plot(ps, type = "l", col = "red2")
+```
+
+## Statistical power
+
+```{r}
+# Visualisering av statistical power
+library(pwr)
+
+# Vi lager en spesialfunksjon for dette
+plotPower <- function(n) {
+  p <- c(rep(0,n))
+  for (i in 1:10001) {
+    e <- 0+(i/10000)-0.0001
+    h <- ES.h(e,0.5)
+    t <- pwr.p.test(h,n)
+    p[i] <- t$power
+  }
+  plot(p, type = "l", frame = F, col = "red2", xaxt = "n", yaxt = "n",
+       xlab = "Sann sannsynlighet for kron", ylab = "Power")
+  axis(1, at=seq(1, 10001, by=2000), labels=seq(0, 1, by=0.2))
+  axis(2, at=seq(0, 1, by=0.2), labels = seq(0, 100, by = 20))
+}
+
+plotPower(10)
+plotPower(100)
+plotPower(1000)
+```
+
+## Kontigenstabeller
+
+```{r}
+# Visualisering av kji-kvadratfordelt variabel
+set.seed(128)
+par(mar = c(5.1,2,4.1,2))
+plot(density(rchisq(10000000, 6)), col = "red", frame = F,
+     main = "Kji-kvadratfordeling",
+     xlab = expression(X^2),
+     ylab = "", yaxt = "n")
+par(op)
+```
+
+## Variansanalyse
+
+I dette eksempelet skal vi se på variansanalyse i et konstruert eksempel med data for tre grupper (populasjoner). Vi oppretter først to vektorer med data for henholdsvis kontor -- $x$ -- og saksbehandlingstid -- $y$. Vi lager i tillegg et histogram over saksbehandlingstid og et indeksplott over saksbehandlingstid hvor punktene er fargelagt basert på kontor-variabelen.
+
+```{r}
+x <- as.factor(c(rep("Kontor A", 5), rep("Kontor B", 5), rep("Kontor C", 5)))
+y <- c(2.6, 3.2, 4.8, 4.1, 2.4, 4.3, 5.9, 6.5, 4.2, 7.1, 1.1, 1.2, 1.4, 2.2, 1.3)
+hist(y, col = "red", main = "Saksbehandlingstid", xlab = "Tid i dager", ylab = "Frekvens")
+plot(y, bg = x, col = "grey", pch = 21, xlab = "Sak", ylab = "Tid i dager")
+```
+
+Manuell utregning av $SSG$, $SSE$ og $SST$:
+
+```{r}
+aggregate(y~x, cbind(y, x), mean)
+ssg <- sum(rep((3.42-3.49)^2, 5), rep((5.60-3.49)^2, 5), rep((1.44-3.49)^2, 5))
+sst <- sum((y - 3.49)^2)
+sse <- sst-ssg
+ssg
+sse
+sst
+```
+
+Basert på tallene for $SST$, $SSG$ og $SSE$, kan vi nå regne ut $F$.
+
+```{r}
+# For å finne msg og mse:
+msg <- ssg/2
+mse <- sse/12
+
+f <- msg/mse
+f
+```
+
+Dette er det samme vi får hvis vi setter opp en ANOVA fra en lineær modell mellom $x$ og $y$:
+
+```{r}
+anova(lm(y~x))
+```
+
+## Multippel regresjon
+
+Vi starter med å utvide det lineære uttrykket med én ny variabel; $\beta_2$.
+
+$$Y=\alpha+\beta_1x_1+\beta_2x_2+\epsilon$$
+
+```{r}
+# Her skal det opprettes en tredimensjonal visualisering av Y=b_0+b_1+b_2
+```
+
+```{r}
+x <- y <- seq(-10, 10, length= 30)
+f <- function(x,y){ z <- x*2 + y -3 }
+z <- outer(x,y,f)
+persp(x, y, z, theta = 30, phi = 30, expand = 0.5, col = "lightblue")
+```
+
+
+## Anscombes kvartett
+
+[Anscombes kvartett](https://en.wikipedia.org/wiki/Anscombe%27s_quartet) viser hvordan fire veldig ulike datasett kan gi den samme regresjonslinjen.
+
+Vi starter med å opprette de fire settene med $x$ og $y$-verdier:
+
+```{r}
+x_i <- c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5)
+y_i <- c (8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68)
+x_ii <- c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5)
+y_ii <- c(9.14, 8.14, 8.74, 8.77, 9.26, 8.1, 6.13, 3.1, 9.13, 7.26, 4.74)
+x_iii <- c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5)
+y_iii <- c(7.46, 6.77, 12.74, 7.11, 7.81, 8.84, 6.08, 5.39, 8.15, 6.42, 5.73)
+x_iv <- c(8, 8, 8, 8, 8, 8, 8, 19, 8, 8, 8)
+y_iv <- c(6.58, 5.76, 7.71, 8.84, 8.47, 7.04, 5.25, 12.5, 5.56, 7.91, 6.89)
+```
+
+Vi kan nå plotte de fire ulike settene med $x$ og $y$-verdier. Disse vil gi helt lik regresjonslinje.
+
+```{r}
+par(mfrow = c(2,2)) # 2x2 output
+
+# Første regresjon
+plot(x_i, y_i,
+     bg = "orange", pch = 21, cex = 1.5,
+     ylim = range(2:14), xlim = range(4:20),
+     ylab = "Y", xlab = "X")
+abline(lm(y_i~x_i), col = "grey")
+
+# Andre regresjon
+plot(x_ii, y_ii,
+     bg = "orange", pch = 21, cex = 1.5,
+     ylim = range(2:14), xlim = range(4:20),
+     ylab = "Y", xlab = "X")
+abline(lm(y_ii~x_ii), col = "grey")
+
+# Tredje regresjon
+plot(x_iii, y_iii,
+     bg = "orange", pch = 21, cex = 1.5,
+     ylim = range(2:14), xlim = range(4:20),
+     ylab = "Y", xlab = "X")
+abline(lm(y_iii~x_iii), col = "grey")
+
+# Fjerde regresjon
+plot(x_iv, y_iv,
+     bg = "orange", pch = 21, cex = 1.5,
+     ylim = range(2:14), xlim = range(4:20),
+     ylab = "Y", xlab = "X")
+abline(lm(y_iv~x_iv), col = "grey")
+
+par(mfrow = c(1,1))
+```
