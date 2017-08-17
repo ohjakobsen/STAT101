@@ -1,0 +1,181 @@
+---
+title: "Regneeksempler modul 1"
+author: "Ove Haugland Jakobsen"
+date: "March 3, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Bayes' teorem og eksempel med mammografi
+
+Bayes' teorem:
+
+$$P(A \vert B)=\frac{P(B \vert A) \cdot P(A)}{P(B \vert A) \cdot P(A)+P(B \vert \bar{A}) \cdot P(\bar{A})}$$
+
+Testen har en spesifitet (sannsynlighet for å identifisere sant tilfelle kreft) lik 0.9, og en sensitivitet (sannsynlighet for å identifisere et sant tilfelle av ikke-kreft) lik 0.85.
+
+Hva er sannsynligheten at en person har kreft når testen er positiv, gitt at sannsynligheten for kreft er 0.05?
+
+Vi har kjennskap til følgende:
+
+* Sannsynlighet for positiv test gitt sykdom: $P(M \vert S) = 0,9$
+* Sannsynlighet for negativ test gitt ikke sykdom: $P(\bar M \vert \bar S) = 0,85$
+* Sannsynlighet for negativ test gitt sykdom: $P(M \vert \bar S)=1-0,85=0,15$
+* Sannsynlighet for sykdom: $P(S)=0,05$
+* Sannsynlighet for ikke sykdom: $P(\bar S)=1-0,05=0,95$
+
+Vi har da tilstrekkelig informasjon til å løse for $P(M \vert S)$:
+
+$$P(S \vert M)=\frac{P(M \vert S)P(S)}{P(M \vert S)P(S)+P(M \vert \bar S)P(\bar S)}=\frac{0,9\cdot0,05}{0,9\cdot0,05+0,15\cdot0,95}=\frac{0,045}{0,1875}=0,24$$
+
+Tolkningen av dette er at sannsynligheten for at sannsynligheten for kreft gitt en postitiv test er 24 prosent. Grunnen til at prosenten blir så lav, er andelen falske positive. Dette vil si andelen personer som testen viser at har kreft, mens som faktisk ikke har kreft. Fordi andelen som har kreft er lav, $P(S)=0,05$, så vil andelen falske positive bli høyere enn andelen korrekte positive.
+
+Hva så når sannsynligheten for kreft er 0,01?
+
+$$P(S \vert M)=\frac{P(M \vert S)P(S)}{P(M \vert S)P(S)+P(M \vert \bar S)P(\bar S)}=\frac{0,9\cdot0,05}{0,9\cdot0,01+0,15\cdot0,99}=\frac{0,009}{0,1494}=0,06$$
+
+Eller når sannsynligheten for kreft er 0,001?
+
+$$P(S \vert M)=\frac{P(M \vert S)P(S)}{P(M \vert S)P(S)+P(M \vert \bar S)P(\bar S)}=\frac{0,9\cdot0,05}{0,9\cdot0,001+0,15\cdot0,999}=\frac{0,0009}{0,14994}=0,006$$
+
+## Bursdagsproblemet
+
+Du har 50 personer i en sal. Hva er sannsynligheten for at *ingen* har bursdag på samme dag?
+
+Dette er et problem med tilfeldig utvalg *uten* tilbakelegging. Den første personen har 365 dager denne personen kan ha bursdag på for å ha bursdag på en unik dag. Sannsynligheten for det blir da $\frac{365}{365}=1$. Neste person har 364 dager tilgjengelig, og vi skriver sannsynligheten for dette som $\frac{364}{365}=`r 364/365`$. Vi fortsetter frem til den 50. personen som har 316 dager tilgjengelig. For å finne sannsynligheten for at ingen har bursdag på samme dag, tar vi produktet av alle sannsynlighetene:
+
+$$\frac{365\cdot364\cdot...\cdot317\cdot316}{365^{50}}=0,0296\approx3\%$$
+
+Med andre ord er det en 3 prosents sannsynlighet for at ingen har bursdag på samme dag, når det er 50 personer i en sal.
+
+I R kan denne utregningen skrives på følgende måte:
+
+```{r}
+prod(316:365)/365^50
+```
+
+Det er også laget en egen funksjon for dette problemet som heter `pbirthday`. Denne funksjonen gir oss sannsynligheten for at minst to personer har bursdag på samme dag. Vi må derfor regne den inverse sannsynligheten for å få sannsynligheten for at ingen har bursdag på samme dag:
+
+```{r}
+1-pbirthday(50)
+```
+
+Visualisering av bursdagsproblemet med kode i R:
+
+```{r}
+vec <- c(365:266)
+vec <- as.numeric(lapply(vec, function(i) prod(i:365)/365^(366-i)))
+plot(vec, type = 'l', ylab = 'Sannsynlighet', xlab = 'Personer', col = 'red',
+     cex.axis = .8, cex.lab = .8, bty = 'n')
+abline(.5, 0, col = 'grey')
+```
+
+## Monty Hall paradokseet
+
+Du kan velge mellom tre dører. Bak to av disse er det en geit, bak den siste en bil.
+
+Du velger én dør, for eksempel den første. Programverten, som vet hva som er bak dørene, åpner en av dørene du ikke har valgt, for eksempel den tredje døren, som har en geit bak. Du får så tilbudet: vil du bytte fra ditt valg til den andre døren?
+
+Vil du ta dette byttet?
+
+**Svar**
+
+Du bør ta byttet. Hvis du står på den valgte døren, er sannsynligheten for å få bil $\frac{1}{3}=0,33$, mens hvis du bytter dør, er sannsynligheten for å få bil $\frac{2}{3}=0,67$. Dette skjer fordi vi har fått ny informasjon ved at programverten åpnet en av dørene vi *ikke* valgte. Sannsynligheten for bil da vi valgte første dør, skrevet som $P(B_1)$, var 0,33, mens sannsynligheten for geit, skrevet som $P(G_1)$, var 0,67.
+
+Siden programverten har åpnet en av de andre dørene med geit bak, vet vi nå følgende: Dersom det faktisk er en bil bak den døra vi *valgte*, får vi følgende sannsynligheter for geit og bil bak dør nummer to:
+
+$$P(G_2\vert B_1)=1, P(B_2\vert B_1)=0$$
+
+Dersom det faktisk er en geit bak den døra vi valgte, får vi følgende sannsynligheter for henholdsvis geit og bil bak dør nummer to:
+
+$$P(G_2\vert G_1)=0, P(B_2\vert G_1)=1$$
+
+Vi kan da bruke regelen for total sannsynlighet for at det er bil bak dør nummer to:
+
+$$P(B_2)=P(B_2\vert B_1)P(B_1)+P(B_2\vert G_1)P(G_1)=(0\cdot0,33)+(1\cdot0,67)=0,67$$
+
+## Binomisk fordeling
+
+I en studentmasse, er sannsynligheten for at en tilfeldig student er samfunnsviter 0.2. Hva er forventning og standardavvik hvis vi trekker ut 500 studenter?
+
+Vi regner først ut forventingen som er lik $np$:
+
+$$E(X)=np=500\cdot0,2=100$$
+
+Estimert standardavvik er:
+
+$$SD(X)=\sqrt{np(1-p)}=\sqrt{500\cdot0,2(1-0,2)}=\sqrt{80}=8,94$$
+
+Den tilfeldige variabelen $X$ er tilnærmet normalfordelt $X\sim N(100, 8.94)$.
+
+Vi kan plotte den binomiske fordelingen med ulike verdier av $X$. Vi får da et plot som ligner på normalfordelingen:
+
+```{r}
+bfordel <- c(0:200)
+bfordel <- as.numeric(lapply(bfordel, function(i) dbinom(i,200,.25)))
+plot(bfordel, type = 'l', col = 'red', cex.axis = .8, cex.lab = .8,
+     ylab = 'Sannsynlighet', xlab = 'Verdi av X')
+```
+
+
+## Lineære kombinasjoner
+
+Dersom en tilfeldig variabel $Z$ er summen av to normalfordelte variabler $X$ og $Y$, så vil $Z$ også være normalfordelt med forventning lik summen av $X$ og $Y$, og standardavvik lik kvadratroten av summen av variansene til $X$ og $Y$:
+
+$$Z\sim N(\mu_X+\mu_Y, \sqrt{\sigma^2_X+\sigma^2_Y})$$
+
+Anta at saksbehandlingstiden for tilskudd i en virksomhet, er en tilfeldig variabel $Z$ som er summen av to arbeidsprosesser, $X$ og $Y$ som er normalfordelte med $X\sim N(10, 2)$ og $Y\sim N(20, 2)$. Hva blir da forventning og standardavvik for $Z$? Forventingen er gitt ved:
+
+$$E(Z)=\sum^n_{i=1}E(x_i)=10+20=30$$
+
+Vi regner først ut variansen til $Z$ som er gitt ved å summere variansene til $X$ ($Var(X)=2^2=4$) og $Y$ ($Var(Y)=2^2=4$):
+
+$$Var(Z)=\sum^n_{i=1}1^2var(x_i)=2^2+2^2=8$$
+
+Standardavviket er kvadratroten av variansen, som er $\sqrt{8}=`r round(sqrt(8),3)`$.
+
+Beviset for lineære kombinasjoner, kan vi se med følgende simulerte data:
+
+```{r}
+# Oppretter variabel med 100.000 observasjoner som er en kombinasjon
+# av to tilfeldige variabler med N(10,2) og N(20,2)
+lkomb <- 10+rnorm(100000,0,2)+20+rnorm(1000000,0,2)
+mean(lkomb)
+sd(lkomb)
+```
+
+
+## Eksempel med to barometer
+
+For det amerikanske presidentvalget, gjennomføres det en rekke valgbarometer. I en undersøkelse har 1500 respondenter svart, mens i en annen har 750 svart. En avis bestemmer seg for å rapportere støtten til en kandidat som gjennomsnittet av disse to målingene. Er dette en god ide?
+
+**Svar: ved å slå sammen undersøkelsene, vil avisa få et bedre estimat (med mindre usikkerhet) enn hvis de kun ser på en av målingene. Siden målingene har ulik $n$, så vil imidlertid estimatet bli skjevt. En bedre løsning er å korrigere for størrelsen på $n$ i undersøkelsene.**
+
+Gitt at 900 svarte de ville stemme på Hillary Clinton i den første målingen og 300 i den andre. Hva blir er forventet oppslutning og hva blir standardfeilen til estimatet?
+
+**Svar: estimert forventing og varians for det første valgbarometeret:**
+
+$$E(\hat p)=\frac{\bar X}{n}=\frac{900}{1500}=0,6$$
+
+$$SE(\hat p)=\sqrt{\frac{\hat p(1-\hat p)}{n}}=\sqrt{\frac{0,6 \cdot (1-0,6)}{1500}}=0.01789$$
+
+**Svar: estimert forventing og varians for det andre valgbarometeret:**
+
+$$E(\hat p)=\frac{\bar X}{n}=\frac{300}{750}=0,4$$
+
+$$SE(\hat p)=\sqrt{\frac{\hat p(1-\hat p)}{n}}=\sqrt{\frac{0,4 \cdot (1-0,4)}{750}}=0.01265$$
+
+Estimatet til avisa som tar gjennomsnittet av de to målingene blir $E(\hat p)=\frac{1}{2}p_1+\frac{1}{2}p_2=\frac{0,4}{2}+\frac{0,6}{2}=0,5$. Et bedre estimat på forventingen blir å ta høyde for at undersøkelsene har ulik $n$. Vi får da følgende estimat: $E(\hat p)=\frac{1}{3}p_1+\frac{2}{3}p_2=\frac{0,4}{3}+\frac{1,2}{3}=0,533$.
+
+Vi kan regne ut standardfeilen til estimatet med følgende formel:
+
+$$SE(\hat p)=\sqrt{\left(\frac{1}{3}\right)^2\left(\frac{p(n-p)}{n}\right)+\left(\frac{2}{3}\right)^2\left(\frac{p(n-p)}{n}\right)}$$
+
+Vi får da følgende utregning:
+
+$$SE(\hat p)=\sqrt{\left(\frac{1}{9}\right)\left(\frac{2p(n-p)}{2\cdot750}\right)+\left(\frac{4}{9}\right)\left(\frac{p(n-p)}{1500}\right)}=\sqrt{\frac{6p(1-p)}{13500}}=\sqrt{\frac{p(1-p)}{2250}}=\sqrt{\frac{0,533(1-0,533)}{2250}}=0,0105$$
+
+Som vi kan se av utregningen over, har det nye estimatet en lavere standardfeil enn begge de separate målingene.
